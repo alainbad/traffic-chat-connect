@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import Map from '@/components/Map';
 import ChatPanel from '@/components/ChatPanel';
+import LogisticsPanel from '@/components/LogisticsPanel';
 import RadiusControl from '@/components/RadiusControl';
 import UserProfile from '@/components/UserProfile';
 import Loader from '@/components/Loader';
@@ -41,16 +42,21 @@ const Index = () => {
           <div className="flex-1 rounded-2xl overflow-hidden shadow-sm min-h-[50vh] md:min-h-[calc(100vh-2rem)]">
             <Map />
           </div>
-          
-          {/* Chat and controls area */}
-          <div className="w-full md:w-[400px] flex flex-col gap-4">
+
+          {/* Right sidebar: Chat + Logistics + Controls */}
+          <div className="w-full md:w-[420px] flex flex-col gap-4">
             {/* Chat panel */}
-            <div className="flex-1 min-h-[400px] md:min-h-0">
+            <div className="min-h-[340px] md:h-[340px] shrink-0">
               <ChatPanel />
             </div>
-            
+
+            {/* Logistics panel */}
+            <div className="flex-1 min-h-[500px] md:min-h-0">
+              <LogisticsPanel />
+            </div>
+
             {/* Controls */}
-            <div className="space-y-4">
+            <div className="space-y-4 shrink-0">
               <UserProfile />
               <RadiusControl />
             </div>

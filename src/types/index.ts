@@ -36,3 +36,53 @@ export interface MapSettings {
   radius: number;
   style: string;
 }
+
+// Logistics types
+
+export type ShipmentStatus = 'In Transit' | 'On Time' | 'Delayed' | 'Delivered' | 'Exception';
+
+export interface Shipment {
+  id: string;
+  carrier: string;
+  origin: string;
+  destination: string;
+  dispatchDate: string;
+  eta: string;
+  status: ShipmentStatus;
+  lastUpdate: string;
+  alerts: string[];
+}
+
+export type InventoryStatus = 'OK' | 'Low' | 'Critical';
+
+export interface InventoryItem {
+  sku: string;
+  name: string;
+  qtyOnHand: number;
+  reorderPoint: number;
+  warehouse: string;
+}
+
+export type RoutePriority = 'High' | 'Medium' | 'Low';
+
+export interface RouteStop {
+  id: string;
+  destination: string;
+  address: string;
+  priority: RoutePriority;
+  eta: string;
+  notes: string;
+}
+
+export type SupplierStatus = 'Active' | 'Pending' | 'Issue' | 'Inactive';
+export type SupplierRequestType = 'order' | 'complaint' | 'negotiation' | 'follow-up';
+
+export interface Supplier {
+  id: string;
+  name: string;
+  productService: string;
+  leadTime: string;
+  lastOrder: string;
+  status: SupplierStatus;
+  notes: string;
+}
