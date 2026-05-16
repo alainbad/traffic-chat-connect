@@ -88,42 +88,50 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: #0D1B2A;
+    --foreground: #F0F4F8;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: #162535;
+    --card-foreground: #F0F4F8;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: #162535;
+    --popover-foreground: #F0F4F8;
 
-    --primary: 210 90% 60%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: #C9A84C;
+    --primary-foreground: #0D1B2A;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: #1B3A5C;
+    --secondary-foreground: #F0F4F8;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: #8899AA;
+    --muted-foreground: #8899AA;
 
-    --accent: 196 90% 60%;
-    --accent-foreground: 210 40% 98%;
+    --accent: #0D7377;
+    --accent-foreground: #F0F4F8;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: #E74C3C;
+    --destructive-foreground: #F0F4F8;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: #1B3A5C;
+    --input: #1E3245;
+    --ring: #C9A84C;
+
+    --navy: #1B3A5C;
+    --gold: #C9A84C;
+    --elevated: #1E3245;
+    --success: #2ECC71;
+    --teal: #0D7377;
+
+    --radius: 1rem;
+
+    --sidebar-background: #162535;
+    --sidebar-foreground: #F0F4F8;
+    --sidebar-primary: #C9A84C;
+    --sidebar-primary-foreground: #0D1B2A;
+    --sidebar-accent: #1E3245;
+    --sidebar-accent-foreground: #F0F4F8;
+    --sidebar-border: #1B3A5C;
+    --sidebar-ring: #C9A84C;
   }
 }
 
