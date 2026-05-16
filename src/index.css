@@ -5,6 +5,46 @@
 @tailwind components;
 @tailwind utilities;
 
+/* CashDrop Design Tokens */
+:root {
+  --cd-background: #0D1B2A;
+  --cd-card: #162535;
+  --cd-navy: #1B3A5C;
+  --cd-gold: #C9A84C;
+  --cd-elevated: #1E3245;
+  --cd-success: #2ECC71;
+  --cd-destructive: #E74C3C;
+  --cd-teal: #0D7377;
+  --cd-foreground: #F0F4F8;
+  --cd-muted: #8899AA;
+}
+
+@keyframes shimmer {
+  0% { opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { opacity: 0.7; }
+}
+
+@keyframes pulse-gold {
+  0%, 100% { text-shadow: 0 0 8px #C9A84C44; }
+  50% { text-shadow: 0 0 24px #C9A84Caa, 0 0 48px #C9A84C55; }
+}
+
+@keyframes check-draw {
+  0% { stroke-dashoffset: 100; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes scale-in {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.cd-shimmer { animation: shimmer 2s ease-in-out infinite; }
+.cd-pulse-gold { animation: pulse-gold 2s ease-in-out infinite; }
+.cd-scale-in { animation: scale-in 0.5s ease-out forwards; }
+
 @layer base {
   :root {
     --background: 210 40% 98%;
