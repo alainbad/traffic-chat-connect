@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Banana Kong</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #060810;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Inter', 'Helvetica Neue', sans-serif;
+      color: #d0d4dc;
+      overflow: hidden;
+    }
+
+    #game-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      width: 900px;
+      max-width: 98vw;
+    }
+
+    /* ── Header ── */
+    #header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 8px 20px;
+      background: rgba(8,12,22,0.92);
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.07);
+      backdrop-filter: blur(4px);
+    }
+
+    .score-block { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+    .score-label { font-size: 10px; font-weight: 600; color: #555; letter-spacing: 2px; text-transform: uppercase; }
+    .score-num { font-size: 28px; font-weight: 700; line-height: 1; }
+    #p1-score { color: #c87040; }
+    #p2-score { color: #4880b0; }
+
+    #center-block { text-align: center; }
+    #game-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #b89040;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+    }
+
+    #wind-block { text-align: center; margin-top: 5px; }
+    #wind-label { font-size: 9px; font-weight: 600; color: #444; letter-spacing: 2px; margin-bottom: 4px; }
+    #wind-track {
+      width: 130px;
+      height: 4px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 2px;
+      position: relative;
+      overflow: visible;
+      margin: 0 auto 4px;
+    }
+    #wind-center {
+      position: absolute;
+      left: 50%; top: -2px; bottom: -2px;
+      width: 1px;
+      background: rgba(255,255,255,0.2);
+    }
+    #wind-fill {
+      position: absolute;
+      height: 100%;
+      background: linear-gradient(90deg, #4880b0, #6aaa60);
+      border-radius: 2px;
+      transition: all 0.5s ease;
+    }
+    #wind-text { font-size: 10px; color: #666; font-weight: 400; }
+
+    /* ── Canvas ── */
+    #gameCanvas {
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.06);
+      display: block;
+    }
+
+    /* ── Controls ── */
+    #controls {
+      width: 100%;
+      background: rgba(8,12,22,0.92);
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.07);
+      padding: 12px 20px 14px;
+    }
+
+    #turn-line {
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      color: #888;
+    }
+
+    #controls-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+
+    .ctrl-group { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .ctrl-label { font-size: 9px; font-weight: 600; letter-spacing: 2px; color: #555; text-transform: uppercase; }
+    .ctrl-val { font-size: 20px; font-weight: 700; color: #b89040; min-width: 60px; text-align: center; }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 200px;
+      height: 3px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.12);
+      outline: none;
+      cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: #b89040;
+      cursor: pointer;
+      box-shadow: 0 0 0 3px rgba(184,144,64,0.2);
+    }
+    input[type=range]::-moz-range-thumb {
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: #b89040;
+      cursor: pointer;
+      border: none;
+    }
+
+    #throw-btn {
+      background: transparent;
+      border: 1px solid rgba(184,144,64,0.5);
+      border-radius: 4px;
+      padding: 10px 28px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #b89040;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      align-self: center;
+    }
+    #throw-btn:hover:not(:disabled) {
+      background: rgba(184,144,64,0.12);
+      border-color: #b89040;
+    }
+    #throw-btn:disabled {
+      border-color: rgba(255,255,255,0.08);
+      color: #333;
+      cursor: not-allowed;
+    }
+
+    #message-text { font-size: 10px; color: #444; text-align: center; margin-top: 6px; letter-spacing: 1px; }
+
+    /* ── Overlay ── */
+    #overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.88);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+    #overlay.hidden { display: none; }
+    #overlay-box {
+      background: #080c16;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 42px 56px;
+      text-align: center;
+    }
+    #overlay-title { font-size: 22px; font-weight: 700; color: #b89040; margin-bottom: 8px; letter-spacing: 1px; }
+    #overlay-sub   { font-size: 13px; color: #555; margin-bottom: 26px; font-weight: 400; letter-spacing: 1px; }
+    #next-btn {
+      background: transparent;
+      border: 1px solid rgba(184,144,64,0.4);
+      border-radius: 4px;
+      padding: 10px 28px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #b89040;
+      cursor: pointer;
+    }
+    #next-btn:hover { background: rgba(184,144,64,0.1); }
+  </style>
+</head>
+<body>
+<div id="game-wrapper">
+
+  <div id="header">
+    <div class="score-block">
+      <div class="score-label">Player 1</div>
+      <div class="score-num" id="p1-score">0</div>
+    </div>
+
+    <div id="center-block">
+      <div id="game-title">Banana Kong</div>
+      <div id="wind-block">
+        <div id="wind-label">Wind</div>
+        <div id="wind-track">
+          <div id="wind-center"></div>
+          <div id="wind-fill"></div>
+        </div>
+        <div id="wind-text">Calm</div>
+      </div>
+    </div>
+
+    <div class="score-block">
+      <div class="score-label">Player 2</div>
+      <div class="score-num" id="p2-score">0</div>
+    </div>
+  </div>
+
+  <canvas id="gameCanvas" width="900" height="460"></canvas>
+
+  <div id="controls">
+    <div id="turn-line">Player 1 — Your turn</div>
+    <div id="controls-row">
+      <div class="ctrl-group">
+        <div class="ctrl-label">Angle</div>
+        <input type="range" id="angle-slider" min="1" max="89" value="45" />
+        <div class="ctrl-val" id="angle-val">45°</div>
+      </div>
+      <button id="throw-btn">Throw</button>
+      <div class="ctrl-group">
+        <div class="ctrl-label">Power</div>
+        <input type="range" id="power-slider" min="5" max="100" value="50" />
+        <div class="ctrl-val" id="power-val">50</div>
+      </div>
+    </div>
+    <div id="message-text">Adjust angle and power, then throw</div>
+  </div>
+</div>
+
+<div id="overlay" class="hidden">
+  <div id="overlay-box">
+    <div id="overlay-title"></div>
+    <div id="overlay-sub"></div>
+    <button id="next-btn">Next Round</button>
+  </div>
+</div>
+
+<script>
+// ─── Canvas & constants ───────────────────────────────────────────────────────
+const canvas = document.getElementById('gameCanvas');
+const ctx    = canvas.getContext('2d');
+const W = canvas.width;
+const H = canvas.height;
+const GY = H - 38; // ground y
+
+const GRAVITY   = 0.055;
+const NUM_BLDGS = 11;
+
+// ─── DOM refs ─────────────────────────────────────────────────────────────────
+const angleSlider  = document.getElementById('angle-slider');
+const powerSlider  = document.getElementById('power-slider');
+const angleValEl   = document.getElementById('angle-val');
+const powerValEl   = document.getElementById('power-val');
+const throwBtn     = document.getElementById('throw-btn');
+const turnLine     = document.getElementById('turn-line');
+const msgText      = document.getElementById('message-text');
+const p1ScoreEl    = document.getElementById('p1-score');
+const p2ScoreEl    = document.getElementById('p2-score');
+const windFillEl   = document.getElementById('wind-fill');
+const windTextEl   = document.getElementById('wind-text');
+const overlay      = document.getElementById('overlay');
+const overlayTitle = document.getElementById('overlay-title');
+const overlaySub   = document.getElementById('overlay-sub');
+const nextBtn      = document.getElementById('next-btn');
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let state = {
+  buildings: [],
+  gorillas:  [{ x: 0, y: 0 }, { x: 0, y: 0 }],
+  current:   0,
+  scores:    [0, 0],
+  wind:      0,
+  banana:    null,
+  particles: [],
+  hitPlayer: -1,
+  phase:     'input',
+  stars:     [],
+};
+
+// ─── Stars ────────────────────────────────────────────────────────────────────
+(function initStars() {
+  for (let i = 0; i < 120; i++) {
+    state.stars.push({
+      x: Math.random() * W,
+      y: Math.random() * (GY * 0.78),
+      r: Math.random() * 1.0 + 0.2,
+      a: 0.2 + Math.random() * 0.7,
+    });
+  }
+})();
+
+// ─── Building generation ──────────────────────────────────────────────────────
+function generateBuildings() {
+  const slot = W / NUM_BLDGS;
+  const bldgs = [];
+
+  // Building facade types: 'glass', 'concrete', 'brick'
+  const types = ['glass','concrete','glass','brick','concrete','glass','brick','concrete','glass','concrete','brick'];
+
+  for (let i = 0; i < NUM_BLDGS; i++) {
+    const w = Math.round(slot * 0.66 + Math.random() * slot * 0.2);
+    const h = 85 + Math.round(Math.random() * 265);
+    const x = Math.round(i * slot + (slot - w) / 2);
+    const y = GY - h;
+    const type = types[i % types.length];
+
+    // Pre-generate windows
+    const wins = [];
+    const wW = type === 'glass' ? w - 4 : 7;
+    const wH = type === 'glass' ? 5 : 9;
+    const padX = type === 'glass' ? 2 : 8;
+    const padY = 10;
+    const gapX = type === 'glass' ? 0 : 8;
+    const gapY = type === 'glass' ? 3 : 8;
+
+    if (type === 'glass') {
+      // Horizontal bands
+      let cy = padY;
+      while (cy + wH < h - 6) {
+        wins.push({ x: padX, y: cy, w: wW, h: wH, lit: Math.random() > 0.25, type: 'band' });
+        cy += wH + gapY;
+      }
+    } else {
+      const cols = Math.floor((w - padX * 2) / (wW + gapX));
+      const rows = Math.floor((h - padY * 2) / (wH + gapY));
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          wins.push({
+            x: padX + c * (wW + gapX),
+            y: padY + r * (wH + gapY),
+            w: wW, h: wH,
+            lit: Math.random() > 0.42,
+            type: 'rect'
+          });
+        }
+      }
+    }
+
+    // Rooftop features
+    const roofFeatures = [];
+    if (Math.random() > 0.45) {
+      roofFeatures.push({ kind: 'antenna', x: w * 0.4 + Math.random() * w * 0.2 });
+    }
+    if (Math.random() > 0.6) {
+      roofFeatures.push({ kind: 'tank', x: w * 0.15 + Math.random() * w * 0.1 });
+    }
+    if (Math.random() > 0.7) {
+      roofFeatures.push({ kind: 'hvac', x: w * 0.55 + Math.random() * w * 0.2 });
+    }
+
+    bldgs.push({ x, y, w, h, type, wins, roofFeatures, damages: [] });
+  }
+  return bldgs;
+}
+
+function placeGorillas(bldgs) {
+  const b0 = bldgs[1];
+  const b1 = bldgs[bldgs.length - 2];
+  return [
+    { x: b0.x + Math.round(b0.w / 2), y: b0.y },
+    { x: b1.x + Math.round(b1.w / 2), y: b1.y },
+  ];
+}
+
+// ─── Building damage system ───────────────────────────────────────────────────
+
+function generateJagged(n) {
+  const pts = [];
+  for (let i = 0; i < n; i++) pts.push(0.58 + Math.random() * 0.42);
+  return pts;
+}
+
+function generateCracks(r, n) {
+  const cracks = [];
+  for (let i = 0; i < n; i++) {
+    const baseAng = (i / n) * Math.PI * 2 + (Math.random() - 0.5) * 0.9;
+    const startR  = r * (0.8 + Math.random() * 0.2);
+    const pts = [{ x: Math.cos(baseAng) * startR, y: Math.sin(baseAng) * startR }];
+    let cr = startR, ca = baseAng;
+    for (let s = 0; s < 2 + Math.floor(Math.random() * 3); s++) {
+      cr += 7 + Math.random() * 16;
+      ca += (Math.random() - 0.5) * 0.7;
+      pts.push({ x: Math.cos(ca) * cr, y: Math.sin(ca) * cr });
+    }
+    cracks.push(pts);
+  }
+  return cracks;
+}
+
+function generateScorches(r) {
+  const sc = [];
+  for (let i = 0; i < 6 + Math.floor(Math.random() * 5); i++) {
+    const a = Math.random() * Math.PI * 2;
+    const d = r * (0.45 + Math.random() * 1.0);
+    sc.push({ dx: Math.cos(a) * d, dy: Math.sin(a) * d, r: 5 + Math.random() * 14 });
+  }
+  return sc;
+}
+
+function isInsideHole(bld, hitX, hitY) {
+  const rx = hitX - bld.x, ry = hitY - bld.y;
+  for (const d of bld.damages) {
+    if (Math.hypot(rx - d.x, ry - d.y) < d.r * 0.88) return true;
+  }
+  return false;
+}
+
+function applyBuildingDamage(bld, hitX, hitY) {
+  const rx = hitX - bld.x, ry = hitY - bld.y;
+  let nearest = null, nearDist = Infinity;
+  for (const d of bld.damages) {
+    const dist = Math.hypot(rx - d.x, ry - d.y);
+    if (dist < d.r * 1.7 && dist < nearDist) { nearest = d; nearDist = dist; }
+  }
+  if (nearest) {
+    nearest.r = Math.min(nearest.r + 16 + nearest.r * 0.28, 108);
+    nearest.hits++;
+    nearest.jagged   = generateJagged(24);
+    nearest.cracks   = generateCracks(nearest.r, 4 + Math.min(nearest.hits * 2, 12));
+    nearest.scorches = generateScorches(nearest.r);
+    return nearest;
+  }
+  const r   = 26;
+  const dmg = { x: rx, y: ry, r, hits: 1,
+    jagged: generateJagged(20), cracks: generateCracks(r, 5), scorches: generateScorches(r) };
+  bld.damages.push(dmg);
+  return dmg;
+}
+
+// ─── Wind display ─────────────────────────────────────────────────────────────
+function updateWindDisplay() {
+  const w = state.wind;
+  const abs = Math.abs(w);
+  const dir = w > 0.1 ? '→' : w < -0.1 ? '←' : '';
+  windTextEl.textContent = abs < 0.2 ? 'Calm' : `${dir} ${abs.toFixed(1)} m/s`;
+
+  const pct = Math.min(abs / 5, 1);
+  if (w >= 0) {
+    windFillEl.style.left  = '50%';
+    windFillEl.style.width = (pct * 50) + '%';
+  } else {
+    windFillEl.style.left  = (50 - pct * 50) + '%';
+    windFillEl.style.width = (pct * 50) + '%';
+  }
+}
+
+// ─── Round init ───────────────────────────────────────────────────────────────
+function initRound() {
+  state.buildings = generateBuildings();
+  state.gorillas  = placeGorillas(state.buildings);
+  state.wind      = +((Math.random() * 10 - 5).toFixed(2));
+  state.banana    = null;
+  state.particles = [];
+  state.hitPlayer = -1;
+  state.phase     = 'input';
+
+  throwBtn.disabled = false;
+  updateWindDisplay();
+  refreshTurnUI();
+}
+
+function refreshTurnUI() {
+  const p = state.current + 1;
+  const color = p === 1 ? '#c87040' : '#4880b0';
+  turnLine.style.color = color;
+  turnLine.textContent = `Player ${p} — Your turn`;
+  msgText.textContent  = 'Adjust angle and power, then throw';
+}
+
+// ─── DRAWING ──────────────────────────────────────────────────────────────────
+
+function drawBackground() {
+  // Deep night sky
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, GY);
+  skyGrad.addColorStop(0,    '#02040a');
+  skyGrad.addColorStop(0.55, '#060c18');
+  skyGrad.addColorStop(0.82, '#0a1422');
+  skyGrad.addColorStop(1,    '#111820');
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, W, GY);
+
+  // Stars
+  for (const s of state.stars) {
+    ctx.globalAlpha = s.a;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // Moon — large, realistic pale disc with subtle tonal variation
+  ctx.save();
+  const moonX = W - 88, moonY = 52, moonR = 26;
+  const moonGrad = ctx.createRadialGradient(moonX - 7, moonY - 7, 2, moonX, moonY, moonR);
+  moonGrad.addColorStop(0,    '#e8e4d4');
+  moonGrad.addColorStop(0.55, '#ccc8b8');
+  moonGrad.addColorStop(1,    '#9a9688');
+  ctx.fillStyle = moonGrad;
+  ctx.shadowColor = 'rgba(210,200,160,0.3)';
+  ctx.shadowBlur  = 28;
+  ctx.beginPath();
+  ctx.arc(moonX, moonY, moonR, 0, Math.PI * 2);
+  ctx.fill();
+  // Subtle crater marks
+  ctx.globalAlpha = 0.12;
+  ctx.fillStyle = '#4a4840';
+  const craters = [[moonX+7,moonY+4,5],[moonX-8,moonY+10,3],[moonX+2,moonY-8,4],[moonX-4,moonY+1,2.5]];
+  for (const [cx,cy,cr] of craters) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, cr, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  ctx.shadowBlur = 0;
+  ctx.restore();
+
+  // Horizon city-glow — amber light pollution
+  const glowGrad = ctx.createLinearGradient(0, GY - 90, 0, GY);
+  glowGrad.addColorStop(0, 'rgba(0,0,0,0)');
+  glowGrad.addColorStop(1, 'rgba(60,35,10,0.55)');
+  ctx.fillStyle = glowGrad;
+  ctx.fillRect(0, GY - 90, W, 90);
+
+  // Ground — dark asphalt
+  const gGrad = ctx.createLinearGradient(0, GY, 0, H);
+  gGrad.addColorStop(0, '#0d1208');
+  gGrad.addColorStop(1, '#060906');
+  ctx.fillStyle = gGrad;
+  ctx.fillRect(0, GY, W, H - GY);
+
+  // Sidewalk edge line
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, GY);
+  ctx.lineTo(W, GY);
+  ctx.stroke();
+}
+
+function drawBuildings() {
+  for (const b of state.buildings) {
+    // Facade gradient based on type
+    let faceGrad;
+    if (b.type === 'glass') {
+      faceGrad = ctx.createLinearGradient(b.x, b.y, b.x + b.w, b.y);
+      faceGrad.addColorStop(0,    '#0e1c2e');
+      faceGrad.addColorStop(0.35, '#162840');
+      faceGrad.addColorStop(0.65, '#122238');
+      faceGrad.addColorStop(1,    '#0a1824');
+    } else if (b.type === 'concrete') {
+      faceGrad = ctx.createLinearGradient(b.x, b.y, b.x + b.w, b.y);
+      faceGrad.addColorStop(0, '#181c22');
+      faceGrad.addColorStop(1, '#101418');
+    } else { // brick
+      faceGrad = ctx.createLinearGradient(b.x, b.y, b.x + b.w, b.y);
+      faceGrad.addColorStop(0, '#1c1410');
+      faceGrad.addColorStop(1, '#110e0c');
+    }
+    ctx.fillStyle = faceGrad;
+    ctx.fillRect(b.x, b.y, b.w, b.h);
+
+    // Left-edge highlight (light from moon)
+    ctx.fillStyle = 'rgba(200,190,160,0.04)';
+    ctx.fillRect(b.x, b.y, 2, b.h);
+
+    // Windows
+    for (const win of b.wins) {
+      if (win.type === 'band') {
+        // Glass curtain-wall band
+        if (win.lit) {
+          const bandGrad = ctx.createLinearGradient(b.x + win.x, b.y + win.y, b.x + win.x, b.y + win.y + win.h);
+          bandGrad.addColorStop(0, 'rgba(180,200,240,0.55)');
+          bandGrad.addColorStop(1, 'rgba(120,150,200,0.25)');
+          ctx.fillStyle = bandGrad;
+          ctx.shadowColor = 'rgba(160,190,255,0.3)';
+          ctx.shadowBlur  = 6;
+        } else {
+          ctx.fillStyle = 'rgba(8,14,26,0.7)';
+          ctx.shadowBlur = 0;
+        }
+        ctx.fillRect(b.x + win.x, b.y + win.y, win.w, win.h);
+        ctx.shadowBlur = 0;
+        // Mullion dividers
+        ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+        ctx.lineWidth = 0.5;
+        for (let mx = b.x + win.x + Math.round(win.w / 4); mx < b.x + win.x + win.w; mx += Math.round(win.w / 4)) {
+          ctx.beginPath();
+          ctx.moveTo(mx, b.y + win.y);
+          ctx.lineTo(mx, b.y + win.y + win.h);
+          ctx.stroke();
+        }
+      } else {
+        // Rectangular window
+        if (win.lit) {
+          const wg = ctx.createRadialGradient(
+            b.x + win.x + win.w/2, b.y + win.y + win.h/2, 0,
+            b.x + win.x + win.w/2, b.y + win.y + win.h/2, win.w * 0.8
+          );
+          wg.addColorStop(0, 'rgba(240,220,150,0.95)');
+          wg.addColorStop(1, 'rgba(180,150,80,0.55)');
+          ctx.fillStyle = wg;
+          ctx.shadowColor = 'rgba(220,190,100,0.5)';
+          ctx.shadowBlur  = 6;
+        } else {
+          ctx.fillStyle = 'rgba(6,10,18,0.85)';
+          ctx.shadowBlur = 0;
+        }
+        ctx.fillRect(b.x + win.x, b.y + win.y, win.w, win.h);
+        ctx.shadowBlur = 0;
+
+        // Window frame
+        ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(b.x + win.x, b.y + win.y, win.w, win.h);
+      }
+    }
+
+    // Roof ledge
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.fillRect(b.x - 1, b.y, b.w + 2, 3);
+
+    // Rooftop features
+    for (const feat of b.roofFeatures) {
+      const fx = b.x + feat.x;
+      const fy = b.y;
+      if (feat.kind === 'antenna') {
+        ctx.strokeStyle = 'rgba(180,180,180,0.6)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(fx, fy);
+        ctx.lineTo(fx, fy - 22);
+        ctx.stroke();
+        // Red beacon
+        ctx.fillStyle = 'rgba(200,40,40,0.7)';
+        ctx.shadowColor = 'rgba(200,40,40,0.8)';
+        ctx.shadowBlur  = 5;
+        ctx.beginPath();
+        ctx.arc(fx, fy - 22, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      } else if (feat.kind === 'tank') {
+        // Cylindrical water tower
+        ctx.fillStyle = '#1a1510';
+        ctx.fillRect(fx, fy - 14, 14, 10);
+        ctx.fillStyle = '#0e0c0a';
+        ctx.beginPath();
+        ctx.ellipse(fx + 7, fy - 14, 7, 3, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Supports
+        ctx.strokeStyle = 'rgba(100,90,80,0.5)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(fx + 3, fy - 4);  ctx.lineTo(fx + 3, fy);
+        ctx.moveTo(fx + 11, fy - 4); ctx.lineTo(fx + 11, fy);
+        ctx.stroke();
+      } else if (feat.kind === 'hvac') {
+        // HVAC unit
+        ctx.fillStyle = '#141a1c';
+        ctx.fillRect(fx, fy - 8, 18, 8);
+        ctx.fillStyle = 'rgba(255,255,255,0.04)';
+        ctx.fillRect(fx, fy - 8, 18, 2);
+      }
+    }
+
+    // Damage zones on top of building
+    for (const dmg of b.damages) {
+      drawDamageZone(b.x + dmg.x, b.y + dmg.y, dmg);
+    }
+  }
+}
+
+// ─── Damage zone rendering ────────────────────────────────────────────────────
+function drawDamageZone(cx, cy, dmg) {
+  const r = dmg.r;
+  const t = Date.now() * 0.0022;
+
+  // Jagged blast hole — very dark fill matching night sky
+  ctx.save();
+  ctx.beginPath();
+  for (let i = 0; i < dmg.jagged.length; i++) {
+    const angle = (i / dmg.jagged.length) * Math.PI * 2;
+    const pr = r * dmg.jagged[i];
+    const px = cx + Math.cos(angle) * pr;
+    const py = cy + Math.sin(angle) * pr;
+    i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+  const holeGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+  holeGrad.addColorStop(0,    '#010106');
+  holeGrad.addColorStop(0.6,  '#02020c');
+  holeGrad.addColorStop(1,    '#030412');
+  ctx.fillStyle = holeGrad;
+  ctx.fill();
+  ctx.restore();
+
+  // Scorch marks on surrounding building surface
+  for (const sc of dmg.scorches) {
+    const sg = ctx.createRadialGradient(cx + sc.dx, cy + sc.dy, 0, cx + sc.dx, cy + sc.dy, sc.r);
+    sg.addColorStop(0, 'rgba(0,0,0,0.8)');
+    sg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = sg;
+    ctx.beginPath();
+    ctx.arc(cx + sc.dx, cy + sc.dy, sc.r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Glowing fire rim — pulsing orange-red
+  const pulse = 0.5 + 0.18 * Math.sin(t * 2.2);
+  const rimGrad = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r + 22);
+  rimGrad.addColorStop(0,    'rgba(0,0,0,0)');
+  rimGrad.addColorStop(0.22, `rgba(255,110,0,${0.55 + pulse * 0.2})`);
+  rimGrad.addColorStop(0.52, `rgba(255,190,30,${0.28 + pulse * 0.1})`);
+  rimGrad.addColorStop(0.82, `rgba(180,40,0,${0.14 + pulse * 0.06})`);
+  rimGrad.addColorStop(1,    'rgba(0,0,0,0)');
+  ctx.fillStyle = rimGrad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r + 22, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Structural cracks radiating from hole
+  ctx.save();
+  ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+  ctx.lineWidth = 1.2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  for (const crack of dmg.cracks) {
+    ctx.beginPath();
+    ctx.moveTo(cx + crack[0].x, cy + crack[0].y);
+    for (let i = 1; i < crack.length; i++) ctx.lineTo(cx + crack[i].x, cy + crack[i].y);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // Animated embers orbiting the rim — more embers per hit
+  const numEmbers = Math.min(3 + dmg.hits * 2, 14);
+  for (let i = 0; i < numEmbers; i++) {
+    const a  = (i / numEmbers) * Math.PI * 2 + t * (0.6 + i * 0.07);
+    const er = r * (0.72 + 0.18 * Math.sin(t * 2.4 + i * 1.1));
+    ctx.save();
+    ctx.globalAlpha = 0.2 + 0.55 * Math.abs(Math.sin(t * 2.8 + i * 1.7));
+    ctx.fillStyle   = i % 3 === 0 ? '#ff8800' : i % 3 === 1 ? '#ffdd00' : '#ff3300';
+    ctx.shadowColor = '#ff4400';
+    ctx.shadowBlur  = 6;
+    ctx.beginPath();
+    ctx.arc(cx + Math.cos(a) * er, cy + Math.sin(a) * er, 1.8 + dmg.hits * 0.25, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // Inner heat glow (stronger on repeated hits)
+  if (dmg.hits >= 2) {
+    const innerGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 0.55);
+    innerGlow.addColorStop(0, `rgba(255,150,20,${Math.min(0.06 * dmg.hits, 0.22)})`);
+    innerGlow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = innerGlow;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 0.55, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+// ─── Realistic gorilla drawing ────────────────────────────────────────────────
+function drawGorilla(gx, gy, playerIdx, armRaised) {
+  const isP1 = playerIdx === 0;
+  ctx.save();
+  ctx.translate(gx, gy);
+
+  // Ground shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.45)';
+  ctx.beginPath();
+  ctx.ellipse(0, 1, 14, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Subtle glow ring for active player
+  if (state.current === playerIdx && state.phase === 'input') {
+    ctx.strokeStyle = isP1 ? 'rgba(200,112,64,0.22)' : 'rgba(72,128,176,0.22)';
+    ctx.lineWidth = 16;
+    ctx.beginPath();
+    ctx.ellipse(0, -28, 22, 30, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  // ── Legs ──
+  const legGrad = ctx.createLinearGradient(-10, -16, 10, 0);
+  legGrad.addColorStop(0, '#1c1c1c');
+  legGrad.addColorStop(1, '#0e0e0e');
+  ctx.fillStyle = legGrad;
+  // Left leg
+  ctx.beginPath();
+  ctx.moveTo(-14, -14);
+  ctx.quadraticCurveTo(-16, -4, -12, 0);
+  ctx.quadraticCurveTo(-8,  2,  -4, 0);
+  ctx.quadraticCurveTo(-6, -6, -8, -16);
+  ctx.closePath();
+  ctx.fill();
+  // Right leg
+  ctx.beginPath();
+  ctx.moveTo(14, -14);
+  ctx.quadraticCurveTo(16, -4, 12, 0);
+  ctx.quadraticCurveTo(8,  2,  4, 0);
+  ctx.quadraticCurveTo(6, -6, 8, -16);
+  ctx.closePath();
+  ctx.fill();
+
+  // ── Body (barrel chest) ──
+  const bodyGrad = ctx.createRadialGradient(-6, -30, 2, 0, -28, 20);
+  bodyGrad.addColorStop(0,    '#2e2e2e');
+  bodyGrad.addColorStop(0.55, '#1a1a1a');
+  bodyGrad.addColorStop(1,    '#0a0a0a');
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.moveTo(-18, -14);
+  ctx.quadraticCurveTo(-22, -28, -16, -38);
+  ctx.quadraticCurveTo(-6,  -44,  0, -44);
+  ctx.quadraticCurveTo( 6,  -44, 16, -38);
+  ctx.quadraticCurveTo( 22, -28, 18, -14);
+  ctx.quadraticCurveTo(  8,  -8,  0,  -8);
+  ctx.quadraticCurveTo( -8,  -8,-18, -14);
+  ctx.closePath();
+  ctx.fill();
+
+  // Silverback saddle (gray marking across upper back)
+  ctx.save();
+  ctx.clip(); // clip to body shape above
+  const silverGrad = ctx.createLinearGradient(0, -44, 0, -26);
+  silverGrad.addColorStop(0, 'rgba(100,100,100,0.45)');
+  silverGrad.addColorStop(1, 'rgba(60,60,60,0)');
+  ctx.fillStyle = silverGrad;
+  ctx.fillRect(-20, -44, 40, 20);
+  ctx.restore();
+
+  // ── Arms ──
+  const armColor = '#171717';
+  ctx.lineCap = 'round';
+
+  const dir = isP1 ? 1 : -1;
+
+  if (armRaised) {
+    // Throwing arm (to opponent's side) raised overhead
+    ctx.strokeStyle = armColor;
+    ctx.lineWidth = 10;
+    ctx.beginPath();
+    ctx.moveTo(dir * 16, -34);
+    ctx.quadraticCurveTo(dir * 28, -42, dir * 26, -52);
+    ctx.stroke();
+    // Fist
+    ctx.fillStyle = '#111';
+    ctx.beginPath();
+    ctx.arc(dir * 26, -53, 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Other arm down/relaxed
+    ctx.strokeStyle = armColor;
+    ctx.lineWidth = 10;
+    ctx.beginPath();
+    ctx.moveTo(-dir * 16, -34);
+    ctx.quadraticCurveTo(-dir * 28, -26, -dir * 24, -14);
+    ctx.stroke();
+    // Knuckles on ground side
+    ctx.fillStyle = '#111';
+    ctx.beginPath();
+    ctx.arc(-dir * 24, -14, 5, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    // Both arms relaxed / knuckle-walk pose
+    ctx.strokeStyle = armColor;
+    ctx.lineWidth = 10;
+    ctx.beginPath();
+    ctx.moveTo(-16, -34);
+    ctx.quadraticCurveTo(-28, -26, -24, -14);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo( 16, -34);
+    ctx.quadraticCurveTo( 28, -26,  24, -14);
+    ctx.stroke();
+    // Knuckles
+    ctx.fillStyle = '#111';
+    ctx.beginPath();
+    ctx.arc(-24, -14, 5, 0, Math.PI * 2);
+    ctx.arc( 24, -14, 5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // ── Head ──
+  const headGrad = ctx.createRadialGradient(-4, -56, 1, 0, -54, 15);
+  headGrad.addColorStop(0,    '#2a2a2a');
+  headGrad.addColorStop(0.6,  '#181818');
+  headGrad.addColorStop(1,    '#080808');
+  ctx.fillStyle = headGrad;
+  ctx.beginPath();
+  // Skull with sagittal crest
+  ctx.moveTo(-13, -44);
+  ctx.quadraticCurveTo(-16, -55, -10, -62);
+  ctx.quadraticCurveTo(-2,  -68,  0, -68);
+  ctx.quadraticCurveTo( 2,  -68, 10, -62);
+  ctx.quadraticCurveTo( 16, -55, 13, -44);
+  ctx.quadraticCurveTo(  0, -42,  0, -42);
+  ctx.quadraticCurveTo(-13, -42,-13, -44);
+  ctx.closePath();
+  ctx.fill();
+
+  // Sagittal crest ridge
+  ctx.fillStyle = '#0e0e0e';
+  ctx.beginPath();
+  ctx.ellipse(0, -64, 4, 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Prominent brow ridge
+  const browGrad = ctx.createLinearGradient(0, -56, 0, -49);
+  browGrad.addColorStop(0, '#181818');
+  browGrad.addColorStop(1, '#080808');
+  ctx.fillStyle = browGrad;
+  ctx.beginPath();
+  ctx.ellipse(0, -54, 12, 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Face skin area (slightly lighter, leathery)
+  ctx.fillStyle = '#121212';
+  ctx.beginPath();
+  ctx.ellipse(0, -50, 9, 9, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Eyes — deep-set under the brow
+  // Eye sockets (dark cavities)
+  ctx.fillStyle = '#050505';
+  ctx.beginPath();
+  ctx.ellipse(-5, -53, 4, 3.5, 0, 0, Math.PI * 2);
+  ctx.ellipse( 5, -53, 4, 3.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Iris — warm brown
+  ctx.fillStyle = '#3a2810';
+  ctx.beginPath();
+  ctx.arc(-5, -53, 2.5, 0, Math.PI * 2);
+  ctx.arc( 5, -53, 2.5, 0, Math.PI * 2);
+  ctx.fill();
+  // Pupils
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  ctx.arc(-5, -53, 1.4, 0, Math.PI * 2);
+  ctx.arc( 5, -53, 1.4, 0, Math.PI * 2);
+  ctx.fill();
+  // Catchlight
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.beginPath();
+  ctx.arc(-4.2, -53.6, 0.7, 0, Math.PI * 2);
+  ctx.arc( 5.8, -53.6, 0.7, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Broad flat nose (wider nostrils, forward-facing)
+  ctx.fillStyle = '#0a0a0a';
+  ctx.beginPath();
+  ctx.ellipse(0, -47, 6, 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Nostrils
+  ctx.fillStyle = '#050505';
+  ctx.beginPath();
+  ctx.ellipse(-2.8, -46, 2.2, 2.8, -0.2, 0, Math.PI * 2);
+  ctx.ellipse( 2.8, -46, 2.2, 2.8,  0.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Lips
+  ctx.fillStyle = '#151515';
+  ctx.beginPath();
+  ctx.ellipse(0, -42, 7, 3.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Lip line
+  ctx.strokeStyle = '#090909';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(-5, -42);
+  ctx.lineTo( 5, -42);
+  ctx.stroke();
+
+  ctx.restore();
+
+  // Small player tag above
+  ctx.save();
+  ctx.translate(gx, gy);
+  const tagColor = isP1 ? 'rgba(200,112,64,0.7)' : 'rgba(72,128,176,0.7)';
+  ctx.fillStyle = tagColor;
+  ctx.font = '600 9px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.letterSpacing = '2px';
+  ctx.fillText(`P${playerIdx + 1}`, 0, -74);
+  ctx.restore();
+}
+
+// ─── Banana drawing ───────────────────────────────────────────────────────────
+function drawBanana() {
+  if (!state.banana) return;
+  const b = state.banana;
+  ctx.save();
+  ctx.translate(b.x, b.y);
+  ctx.rotate(b.rot);
+
+  // Draw banana as a thick crescent using layered strokes
+  // Outer dark rind
+  ctx.strokeStyle = '#5a3800';
+  ctx.lineWidth   = 10;
+  ctx.lineCap = 'round';
+  ctx.shadowColor = 'rgba(180,130,0,0.4)';
+  ctx.shadowBlur  = 8;
+  ctx.beginPath();
+  ctx.arc(0, 7, 15, Math.PI + 0.42, -0.42, false);
+  ctx.stroke();
+
+  // Main yellow body
+  ctx.strokeStyle = '#d4920a';
+  ctx.lineWidth = 8;
+  ctx.beginPath();
+  ctx.arc(0, 7, 15, Math.PI + 0.42, -0.42, false);
+  ctx.stroke();
+
+  // Bright highlight
+  ctx.strokeStyle = '#f0c030';
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.arc(0, 7, 15, Math.PI + 0.42, -0.42, false);
+  ctx.stroke();
+
+  // Specular highlight on top
+  ctx.strokeStyle = 'rgba(255,240,160,0.6)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(0, 7, 15, Math.PI + 0.44, -0.5, false);
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+
+  // Brown tips
+  const tipPositions = [
+    { x: Math.cos(Math.PI + 0.42) * 15, y: 7 + Math.sin(Math.PI + 0.42) * 15 },
+    { x: Math.cos(-0.42) * 15, y: 7 + Math.sin(-0.42) * 15 },
+  ];
+  ctx.fillStyle = '#3a2000';
+  for (const tp of tipPositions) {
+    ctx.beginPath();
+    ctx.arc(tp.x, tp.y, 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+// ─── Particles ────────────────────────────────────────────────────────────────
+function drawParticles() {
+  for (const p of state.particles) {
+    ctx.save();
+    ctx.globalAlpha = p.a;
+    if (p.kind === 'smoke') {
+      const sg = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
+      sg.addColorStop(0, 'rgba(80,75,70,0.75)');
+      sg.addColorStop(1, 'rgba(30,28,26,0)');
+      ctx.fillStyle = sg;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (p.kind === 'flash') {
+      const fg = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
+      fg.addColorStop(0,   'rgba(255,255,220,1)');
+      fg.addColorStop(0.4, 'rgba(255,180,60,0.7)');
+      fg.addColorStop(1,   'rgba(255,80,0,0)');
+      ctx.fillStyle = fg;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+// ─── Angle indicator ──────────────────────────────────────────────────────────
+function drawAngleArrow() {
+  if (state.phase !== 'input') return;
+  const g   = state.gorillas[state.current];
+  const ang = parseInt(angleSlider.value) * Math.PI / 180;
+  const dir = state.current === 0 ? 1 : -1;
+  const len = 48;
+  const ox  = g.x;
+  const oy  = g.y - 50;
+
+  const ex = ox + Math.cos(ang) * len * dir;
+  const ey = oy - Math.sin(ang) * len;
+
+  ctx.save();
+  ctx.strokeStyle = 'rgba(184,144,64,0.6)';
+  ctx.lineWidth   = 1;
+  ctx.setLineDash([4, 5]);
+  ctx.beginPath();
+  ctx.moveTo(ox, oy);
+  ctx.lineTo(ex, ey);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Arrowhead
+  const headAng = Math.atan2(ey - oy, ex - ox);
+  ctx.fillStyle = 'rgba(184,144,64,0.7)';
+  ctx.save();
+  ctx.translate(ex, ey);
+  ctx.rotate(headAng);
+  ctx.beginPath();
+  ctx.moveTo(7, 0);
+  ctx.lineTo(-4, 3.5);
+  ctx.lineTo(-4, -3.5);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+  ctx.restore();
+}
+
+// ─── Main render ──────────────────────────────────────────────────────────────
+function render() {
+  ctx.clearRect(0, 0, W, H);
+  drawBackground();
+  drawBuildings();
+
+  for (let i = 0; i < 2; i++) {
+    if (state.hitPlayer === i) continue;
+    const g = state.gorillas[i];
+    drawGorilla(g.x, g.y, i, state.current === i && state.phase === 'input');
+  }
+
+  drawBanana();
+  drawParticles();
+  drawAngleArrow();
+}
+
+// ─── Explosion ────────────────────────────────────────────────────────────────
+function createExplosion(x, y, scale = 1) {
+  const s = Math.max(0.6, Math.min(scale, 4));
+  const fireColors = ['#ff6000','#ff4400','#ff8800','#ffaa00','#ffdd00','#ffffff','#ff2200'];
+
+  // Fire core — count and speed scale with hit number
+  const fireCount = Math.round(30 * s);
+  for (let i = 0; i < fireCount; i++) {
+    const ang   = Math.random() * Math.PI * 2;
+    const speed = (1.5 + Math.random() * 7) * Math.sqrt(s);
+    state.particles.push({
+      x, y,
+      vx: Math.cos(ang) * speed,
+      vy: Math.sin(ang) * speed - 3 * s,
+      r:  (2 + Math.random() * 6) * Math.min(s, 2),
+      a:  1,
+      color: fireColors[Math.floor(Math.random() * fireColors.length)],
+      kind: 'fire',
+    });
+  }
+
+  // Smoke column — taller and denser on bigger hits
+  const smokeCount = Math.round(18 * s);
+  for (let i = 0; i < smokeCount; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    state.particles.push({
+      x: x + (Math.random() - 0.5) * 20 * s,
+      y: y + (Math.random() - 0.5) * 10,
+      vx: (Math.random() - 0.5) * 1.5,
+      vy: -0.5 - Math.random() * 2.2 * s,
+      r:  (8 + Math.random() * 20) * Math.min(s, 2),
+      a:  0.6,
+      color: '', kind: 'smoke',
+    });
+  }
+
+  // Concrete/brick debris chunks
+  const debrisCount = Math.round(20 * s);
+  const debrisColors = ['#2a1a08','#3a2a14','#4a3820','#1a1a1a','#252520'];
+  for (let i = 0; i < debrisCount; i++) {
+    const ang   = Math.random() * Math.PI * 2;
+    const speed = (2 + Math.random() * 6) * Math.sqrt(s);
+    state.particles.push({
+      x, y,
+      vx: Math.cos(ang) * speed,
+      vy: Math.sin(ang) * speed - 2.5,
+      r:  (1.5 + Math.random() * 3.5) * Math.min(s, 1.5),
+      a:  1,
+      color: debrisColors[Math.floor(Math.random() * debrisColors.length)],
+      kind: 'debris',
+    });
+  }
+
+  // Flash — bright white burst at center
+  state.particles.push({
+    x, y, vx: 0, vy: 0,
+    r: 18 * s, a: 0.9,
+    color: '#ffffff', kind: 'flash',
+  });
+}
+
+// ─── Physics update ───────────────────────────────────────────────────────────
+function updateBanana() {
+  if (!state.banana) return;
+  const b = state.banana;
+  b.x  += b.vx;
+  b.y  += b.vy;
+  b.vy += GRAVITY;
+  b.vx += state.wind * 0.0018;
+  b.rot += 0.18;
+
+  if (b.x < -30 || b.x > W + 30 || b.y > H + 30) {
+    missTurn(); return;
+  }
+  for (const bld of state.buildings) {
+    if (b.x > bld.x && b.x < bld.x + bld.w && b.y > bld.y && b.y < bld.y + bld.h) {
+      // Pass through existing holes
+      if (isInsideHole(bld, b.x, b.y)) continue;
+      // Apply damage to building material, then switch turns
+      const dmg = applyBuildingDamage(bld, b.x, b.y);
+      createExplosion(b.x, b.y, Math.max(1, dmg.r / 28));
+      missTurn(); return;
+    }
+  }
+  if (b.y > GY) { missTurn(); return; }
+
+  for (let i = 0; i < 2; i++) {
+    if (i === state.current) continue;
+    const g = state.gorillas[i];
+    const dx = Math.abs(b.x - g.x);
+    const dy = Math.abs(b.y - (g.y - 30));
+    if (dx < 20 && dy < 28) {
+      hitGorilla(i, b.x, b.y); return;
+    }
+  }
+}
+
+function missTurn() {
+  state.banana  = null;
+  state.current = 1 - state.current;
+  state.wind    = +((Math.random() * 10 - 5).toFixed(2));
+  state.phase   = 'input';
+  throwBtn.disabled = false;
+  updateWindDisplay();
+  refreshTurnUI();
+  msgText.textContent = 'Missed — wind changed. Adjust and try again.';
+}
+
+function hitGorilla(victimIdx, bx, by) {
+  createExplosion(bx, by, 2.5);
+  state.banana    = null;
+  state.hitPlayer = victimIdx;
+  state.scores[state.current]++;
+  state.phase     = 'exploding';
+  throwBtn.disabled = true;
+
+  p1ScoreEl.textContent = state.scores[0];
+  p2ScoreEl.textContent = state.scores[1];
+
+  const winner = state.current + 1;
+  setTimeout(() => {
+    overlayTitle.textContent = `Player ${winner} wins the round`;
+    overlaySub.textContent   = `Score  —  P1: ${state.scores[0]}   P2: ${state.scores[1]}`;
+    overlay.classList.remove('hidden');
+  }, 1500);
+}
+
+function updateParticles() {
+  state.particles = state.particles.filter(p => p.a > 0.02);
+  for (const p of state.particles) {
+    p.x  += p.vx;
+    p.y  += p.vy;
+    p.vy += p.kind === 'smoke' ? -0.015 : p.kind === 'flash' ? 0 : 0.06;
+    p.a  *= p.kind === 'smoke' ? 0.960 : p.kind === 'flash' ? 0.82 : 0.962;
+    if (p.kind === 'flash') p.r *= 1.08;
+    else if (p.kind !== 'smoke') p.r *= 0.993;
+  }
+}
+
+// Emit persistent smoke from active damage sites
+function emitDamageSmoke() {
+  for (const bld of state.buildings) {
+    for (const dmg of bld.damages) {
+      if (Math.random() > 0.18) continue;
+      const cx = bld.x + dmg.x, cy = bld.y + dmg.y;
+      state.particles.push({
+        x: cx + (Math.random() - 0.5) * dmg.r * 0.6,
+        y: cy + (Math.random() - 0.5) * dmg.r * 0.3,
+        vx: (Math.random() - 0.5) * 0.6,
+        vy: -0.4 - Math.random() * 1.0,
+        r:  4 + Math.random() * 10,
+        a:  0.28 + Math.random() * 0.18,
+        color: '', kind: 'smoke',
+      });
+    }
+  }
+}
+
+// ─── Game loop ────────────────────────────────────────────────────────────────
+function loop() {
+  requestAnimationFrame(loop);
+  if (state.phase === 'flying' || state.phase === 'exploding') {
+    updateBanana();
+    updateParticles();
+  }
+  // Always emit smoke from standing damage sites
+  emitDamageSmoke();
+  updateParticles();
+  render();
+}
+
+// ─── Throw ────────────────────────────────────────────────────────────────────
+function throwBanana() {
+  if (state.phase !== 'input') return;
+  const angle  = parseInt(angleSlider.value) * Math.PI / 180;
+  const power  = parseInt(powerSlider.value);
+  const speed  = power * 0.085;
+  const dir    = state.current === 0 ? 1 : -1;
+  const g      = state.gorillas[state.current];
+
+  state.banana = {
+    x:   g.x + dir * 20,
+    y:   g.y - 52,
+    vx:  dir * speed * Math.cos(angle),
+    vy: -speed * Math.sin(angle),
+    rot: 0,
+  };
+  state.phase   = 'flying';
+  throwBtn.disabled = true;
+  msgText.textContent = '— in flight —';
+}
+
+// ─── Events ───────────────────────────────────────────────────────────────────
+angleSlider.addEventListener('input', () => {
+  angleValEl.textContent = angleSlider.value + '°';
+  if (state.phase === 'input') render();
+});
+powerSlider.addEventListener('input', () => {
+  powerValEl.textContent = powerSlider.value;
+});
+throwBtn.addEventListener('click', throwBanana);
+document.addEventListener('keydown', e => {
+  if ((e.code === 'Space' || e.code === 'Enter') && !throwBtn.disabled) {
+    e.preventDefault();
+    throwBanana();
+  }
+});
+nextBtn.addEventListener('click', () => {
+  overlay.classList.add('hidden');
+  state.current = 1 - state.current;
+  initRound();
+});
+
+// ─── Boot ─────────────────────────────────────────────────────────────────────
+initRound();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
