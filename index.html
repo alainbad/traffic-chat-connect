@@ -7,58 +7,79 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{background:#0a0612;color:#fff;font-family:'Rajdhani',sans-serif;overflow-x:hidden;min-height:100vh;display:flex;flex-direction:column;align-items:center;user-select:none}
+html,body{background:#060a14;color:#b0bcd8;font-family:'Rajdhani',sans-serif;font-weight:500;overflow-x:hidden;min-height:100vh;display:flex;flex-direction:column;align-items:center;user-select:none}
 #game-wrapper{width:900px;max-width:100vw}
-#header{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:linear-gradient(90deg,#1a0a2e,#0d1b3e,#1a0a2e);border-bottom:2px solid #4a2080;min-height:48px}
-.player-info{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:160px}
-.player-name{font-family:'Orbitron',sans-serif;font-size:11px;color:#aaa;letter-spacing:1px}
-.player-wins{display:flex;gap:4px;margin:2px 0}
-.win-dot{width:12px;height:12px;border-radius:50%;border:2px solid #7a40c0;background:transparent;transition:background 0.3s}
-.win-dot.filled{background:#9b59b6;box-shadow:0 0 6px #9b59b6}
-.player-hearts{display:flex;gap:3px;font-size:16px}
-.heart{transition:all 0.3s}
-.heart.lost{opacity:0.25;filter:grayscale(1)}
+#header{display:grid;grid-template-columns:1fr 200px 1fr;background:linear-gradient(180deg,#0d1428 0%,#0a1020 100%);border:1px solid rgba(50,80,180,0.25);border-bottom:2px solid rgba(80,120,220,0.18);border-radius:10px 10px 0 0;min-height:60px;overflow:hidden}
+.player-info{padding:10px 16px;display:flex;flex-direction:column;justify-content:center;gap:6px}
+#p1info{border-right:1px solid rgba(50,80,180,0.2)}
+#p2info{border-left:1px solid rgba(50,80,180,0.2);align-items:flex-end;text-align:right}
+.player-name{font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700}
+#p1info .player-name{color:#e06428}
+#p2info .player-name{color:#2878e0}
+.player-hearts{display:flex;gap:5px;font-size:18px;line-height:1}
+#p2info .player-hearts{flex-direction:row-reverse}
+.heart{transition:all 0.3s;filter:drop-shadow(0 0 4px rgba(255,60,60,0.6))}
+.heart.lost{opacity:0.14;filter:none}
 .heart.flash{animation:heartFlash 0.4s ease-out}
-@keyframes heartFlash{0%,100%{transform:scale(1)}50%{transform:scale(1.5);filter:hue-rotate(180deg)}}
-#title-block{text-align:center;flex:1}
-#title-block h1{font-family:'Orbitron',sans-serif;font-size:18px;color:#f0c030;text-shadow:0 0 10px #f0c030aa;letter-spacing:2px}
-#round-info{font-size:11px;color:#aaa;margin-top:1px}
-#wind-info{font-size:11px;color:#8de;margin-top:1px}
-#canvas-container{position:relative;width:900px;max-width:100vw;overflow:hidden}
-canvas{display:block;width:100%;image-rendering:pixelated}
-#controls{background:linear-gradient(90deg,#0d1428,#0a0e1f,#0d1428);border-top:1px solid #2a1060;padding:6px 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center}
-.weapon-btn{background:#1a0a2e;border:2px solid #4a2080;border-radius:8px;padding:4px 8px;cursor:pointer;font-size:14px;color:#ccc;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;line-height:1.2}
-.weapon-btn span.ammo{font-size:9px;color:#888}
-.weapon-btn:hover{border-color:#9b59b6;background:#2a1a4e}
-.weapon-btn.selected{border-color:#f0c030;background:#2a1a0a;box-shadow:0 0 8px #f0c030aa}
-.weapon-btn:disabled{opacity:0.4;cursor:not-allowed}
-.ctrl-label{font-size:11px;color:#8de;white-space:nowrap}
-input[type=range]{-webkit-appearance:none;height:6px;border-radius:3px;background:linear-gradient(90deg,#4a2080,#9b59b6);cursor:pointer;width:120px}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#f0c030;border:2px solid #fff;box-shadow:0 0 4px #f0c030aa}
-.ctrl-val{font-family:'Orbitron',sans-serif;font-size:11px;color:#f0c030;width:32px;text-align:center}
-#throw-btn{background:linear-gradient(135deg,#4a1070,#9b20d0);border:2px solid #c050f0;border-radius:10px;color:#fff;font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;padding:8px 16px;cursor:pointer;letter-spacing:1px;transition:all 0.2s;white-space:nowrap}
-#throw-btn:hover:not(:disabled){background:linear-gradient(135deg,#6a20a0,#bb40f0);box-shadow:0 0 12px #c050f0aa}
-#throw-btn:disabled{opacity:0.5;cursor:not-allowed}
-#timer-display{font-family:'Orbitron',sans-serif;font-size:13px;color:#4fc;min-width:40px;text-align:center}
-#timer-display.urgent{color:#f44;animation:timerPulse 0.6s ease-in-out infinite}
-@keyframes timerPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
-#traj-btn{background:#1a0a2e;border:1px solid #4a2080;border-radius:6px;color:#8de;font-size:11px;padding:4px 8px;cursor:pointer;white-space:nowrap}
-#traj-btn.active{border-color:#4fc;color:#4fc}
-#message{text-align:center;min-height:28px;padding:4px;font-size:14px;color:#ff9;}
-#overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:100;justify-content:center;align-items:center}
+@keyframes heartFlash{0%,100%{transform:scale(1)}50%{transform:scale(1.7)}}
+.player-wins{display:flex;gap:5px}
+#p2info .player-wins{flex-direction:row-reverse}
+.win-dot{width:9px;height:9px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);transition:all 0.3s}
+.win-dot.filled{background:#c89028;border-color:#f0c060;box-shadow:0 0 7px rgba(200,144,40,0.65)}
+#title-block{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px;background:linear-gradient(180deg,rgba(200,144,40,0.07) 0%,transparent 100%)}
+#title-block h1{font-family:'Orbitron',sans-serif;font-size:15px;font-weight:900;color:#c89028;letter-spacing:5px;text-shadow:0 0 18px rgba(200,144,40,0.5);text-transform:uppercase}
+#round-info{font-size:10px;color:rgba(176,188,216,0.5);letter-spacing:2px;text-transform:uppercase}
+#wind-info{font-size:11px;color:#70b8d8;letter-spacing:1px}
+#canvas-container{position:relative;width:900px;max-width:100vw;overflow:hidden;border-left:1px solid rgba(50,80,180,0.25);border-right:1px solid rgba(50,80,180,0.25)}
+canvas{display:block;width:100%}
+#controls{background:linear-gradient(180deg,#0a0e20 0%,#07091a 100%);border:1px solid rgba(50,80,180,0.25);border-top:1px solid rgba(50,80,180,0.12);border-radius:0 0 10px 10px;padding:10px 14px 8px;display:flex;flex-direction:column;gap:7px}
+#turn-line{text-align:center;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:rgba(176,188,216,0.45);transition:color 0.3s}
+#turn-line.p1{color:#e06428}
+#turn-line.p2{color:#2878e0}
+#ctrl-row{display:flex;align-items:center;gap:10px}
+#weapons{display:flex;gap:5px;flex-shrink:0}
+.weapon-btn{display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:5px 7px;cursor:pointer;color:#8090b8;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;transition:all 0.15s;min-width:52px}
+.weapon-btn:hover:not(:disabled){background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.22);color:#b0bcd8}
+.weapon-btn.selected{background:rgba(200,144,40,0.12);border-color:rgba(200,144,40,0.65);color:#f0c060;box-shadow:0 0 12px rgba(200,144,40,0.2)}
+.weapon-btn:disabled{opacity:0.28;cursor:not-allowed}
+.weapon-btn .wico{font-size:17px;line-height:1}
+.weapon-btn .wlabel{font-size:9px;letter-spacing:1px;opacity:0.75}
+.weapon-btn span.ammo{font-family:'Orbitron',sans-serif;font-size:9px;color:rgba(255,255,255,0.35)}
+.weapon-btn.selected span.ammo{color:#c89028}
+.ctrl-sep{width:1px;height:38px;background:rgba(255,255,255,0.07);flex-shrink:0}
+.ctrl-group{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
+.ctrl-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(176,188,216,0.38)}
+.ctrl-row{display:flex;align-items:center;gap:7px}
+.ctrl-val{font-family:'Orbitron',sans-serif;font-size:14px;font-weight:700;color:#f0c060;min-width:40px;text-align:right}
+input[type=range]{-webkit-appearance:none;flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,0.1);cursor:pointer;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#c89028;box-shadow:0 0 8px rgba(200,144,40,0.65);cursor:pointer;border:2px solid #f0c060}
+#throw-col{display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0}
+#throw-btn{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:900;letter-spacing:2px;padding:10px 24px;background:linear-gradient(135deg,#b87820,#8a5010);border:1.5px solid #c89028;border-radius:8px;color:#ffd878;cursor:pointer;text-transform:uppercase;box-shadow:0 0 16px rgba(200,144,40,0.25),inset 0 1px 0 rgba(255,255,255,0.15);transition:all 0.15s;white-space:nowrap}
+#throw-btn:hover:not(:disabled){background:linear-gradient(135deg,#c88828,#9a6020);box-shadow:0 0 28px rgba(200,144,40,0.5),inset 0 1px 0 rgba(255,255,255,0.15);transform:translateY(-1px)}
+#throw-btn:active{transform:translateY(0)}
+#throw-btn:disabled{opacity:0.38;cursor:not-allowed;transform:none}
+#timer-display{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:700;color:rgba(176,188,216,0.55);min-width:42px;text-align:center;letter-spacing:1px}
+#timer-display.urgent{color:#e82828;animation:timerPulse 0.5s ease-in-out infinite;text-shadow:0 0 14px rgba(232,40,40,0.6)}
+@keyframes timerPulse{0%,100%{opacity:1}50%{opacity:0.38}}
+#traj-btn{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;padding:7px 11px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:rgba(176,188,216,0.4);cursor:pointer;text-transform:uppercase;transition:all 0.15s;white-space:nowrap;flex-shrink:0}
+#traj-btn.active{background:rgba(80,180,255,0.08);border-color:rgba(80,180,255,0.4);color:#70c0f8}
+#message{text-align:center;font-size:12px;color:rgba(176,188,216,0.45);letter-spacing:1px;min-height:16px;padding-top:1px}
+#overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:100;justify-content:center;align-items:center;backdrop-filter:blur(4px)}
 #overlay.show{display:flex}
-.overlay-box{background:linear-gradient(135deg,#1a0a2e,#0d1b3e);border:3px solid #9b59b6;border-radius:16px;padding:32px 48px;text-align:center;max-width:420px;box-shadow:0 0 40px #9b59b6aa}
-.overlay-box h2{font-family:'Orbitron',sans-serif;font-size:28px;color:#f0c030;text-shadow:0 0 10px #f0c030;margin-bottom:12px}
-.overlay-box p{font-size:16px;color:#ccc;margin-bottom:20px}
-.overlay-box button{background:linear-gradient(135deg,#4a1070,#9b20d0);border:2px solid #c050f0;border-radius:10px;color:#fff;font-family:'Orbitron',sans-serif;font-size:14px;padding:10px 24px;cursor:pointer;transition:all 0.2s}
-.overlay-box button:hover{background:linear-gradient(135deg,#6a20a0,#bb40f0);box-shadow:0 0 12px #c050f0aa}
-.score-display{font-size:20px;color:#9b59b6;margin-bottom:16px}
+.overlay-box{background:linear-gradient(160deg,#0d1830 0%,#070c1a 100%);border:2px solid rgba(200,144,40,0.4);border-radius:16px;padding:36px 52px;text-align:center;max-width:420px;box-shadow:0 0 60px rgba(200,144,40,0.15),0 20px 60px rgba(0,0,0,0.6);position:relative;overflow:hidden}
+.overlay-box::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top,rgba(200,144,40,0.07) 0%,transparent 60%);pointer-events:none}
+.overlay-box h2{font-family:'Orbitron',sans-serif;font-size:26px;font-weight:900;color:#c89028;text-shadow:0 0 20px rgba(200,144,40,0.5);margin-bottom:10px;letter-spacing:3px}
+.overlay-box p{font-size:15px;color:#8090b8;margin-bottom:22px;letter-spacing:1px}
+.overlay-box button{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;padding:11px 28px;background:linear-gradient(135deg,#b87820,#8a5010);border:1.5px solid #c89028;border-radius:8px;color:#ffd878;cursor:pointer;text-transform:uppercase;transition:all 0.15s;box-shadow:0 0 16px rgba(200,144,40,0.2)}
+.overlay-box button:hover{background:linear-gradient(135deg,#c88828,#9a6020);box-shadow:0 0 28px rgba(200,144,40,0.4);transform:translateY(-1px)}
+.score-display{font-family:'Orbitron',sans-serif;font-size:22px;color:#f0c060;margin-bottom:16px;letter-spacing:2px}
 @media(max-width:900px){
   #game-wrapper,#canvas-container{width:100vw}
-  #controls{gap:4px;padding:4px 6px}
-  input[type=range]{width:80px}
-  .player-info{min-width:110px}
-  #title-block h1{font-size:14px}
+  #controls{padding:8px 10px}
+  input[type=range]{min-width:50px}
+  #title-block h1{font-size:12px;letter-spacing:3px}
+  .weapon-btn{min-width:44px;padding:4px 5px}
+  #throw-btn{padding:8px 14px;font-size:11px}
 }
 </style>
 </head>
@@ -66,19 +87,19 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 <div id="game-wrapper">
   <div id="header">
     <div class="player-info" id="p1info">
-      <div class="player-name">PLAYER 1</div>
-      <div class="player-wins" id="p1wins"></div>
+      <div class="player-name">Player 1</div>
       <div class="player-hearts" id="p1hearts"></div>
+      <div class="player-wins" id="p1wins"></div>
     </div>
     <div id="title-block">
-      <h1>🍌 BANANA KONG</h1>
+      <h1>Banana Kong</h1>
       <div id="round-info">Round 1 of 5</div>
       <div id="wind-info">Wind: calm</div>
     </div>
     <div class="player-info" id="p2info">
-      <div class="player-name">PLAYER 2</div>
-      <div class="player-wins" id="p2wins"></div>
+      <div class="player-name">Player 2</div>
       <div class="player-hearts" id="p2hearts"></div>
+      <div class="player-wins" id="p2wins"></div>
     </div>
   </div>
 
@@ -87,27 +108,51 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
   </div>
 
   <div id="controls">
-    <div style="display:flex;gap:4px;align-items:center">
-      <button class="weapon-btn selected" id="wbtn0" onclick="selectWeapon(0)">🍌<span class="ammo">∞</span></button>
-      <button class="weapon-btn" id="wbtn1" onclick="selectWeapon(1)">💥<span class="ammo" id="wammo1">2</span></button>
-      <button class="weapon-btn" id="wbtn2" onclick="selectWeapon(2)">☄️<span class="ammo" id="wammo2">1</span></button>
+    <div id="turn-line" class="p1">Player 1's Turn</div>
+    <div id="ctrl-row">
+      <div id="weapons">
+        <button class="weapon-btn selected" id="wbtn0" onclick="selectWeapon(0)">
+          <span class="wico">🍌</span>
+          <span class="wlabel">Banana</span>
+          <span class="ammo">∞</span>
+        </button>
+        <button class="weapon-btn" id="wbtn1" onclick="selectWeapon(1)">
+          <span class="wico">💥</span>
+          <span class="wlabel">Cluster</span>
+          <span class="ammo" id="wammo1">2</span>
+        </button>
+        <button class="weapon-btn" id="wbtn2" onclick="selectWeapon(2)">
+          <span class="wico">☄️</span>
+          <span class="wlabel">Nuke</span>
+          <span class="ammo" id="wammo2">1</span>
+        </button>
+      </div>
+      <div class="ctrl-sep"></div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">Angle</div>
+        <div class="ctrl-row">
+          <input type="range" id="angleSlider" min="5" max="175" value="45" oninput="updateControls()">
+          <span class="ctrl-val" id="angleVal">45°</span>
+        </div>
+      </div>
+      <div class="ctrl-sep"></div>
+      <div id="throw-col">
+        <button id="throw-btn" onclick="throwBanana()">THROW</button>
+        <div id="timer-display">20s</div>
+      </div>
+      <div class="ctrl-sep"></div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">Power</div>
+        <div class="ctrl-row">
+          <span class="ctrl-val" id="powerVal">70%</span>
+          <input type="range" id="powerSlider" min="10" max="100" value="70" oninput="updateControls()">
+        </div>
+      </div>
+      <div class="ctrl-sep"></div>
+      <button id="traj-btn" class="active" onclick="toggleTrajectory()">◎ Traj</button>
     </div>
-    <div style="display:flex;align-items:center;gap:4px">
-      <span class="ctrl-label">ANGLE</span>
-      <input type="range" id="angleSlider" min="5" max="175" value="45" oninput="updateControls()">
-      <span class="ctrl-val" id="angleVal">45°</span>
-    </div>
-    <button id="throw-btn" onclick="throwBanana()">THROW</button>
-    <div id="timer-display">20s</div>
-    <div style="display:flex;align-items:center;gap:4px">
-      <span class="ctrl-val" id="powerVal">70%</span>
-      <input type="range" id="powerSlider" min="10" max="100" value="70" oninput="updateControls()">
-      <span class="ctrl-label">POWER</span>
-    </div>
-    <button id="traj-btn" class="active" onclick="toggleTrajectory()">◎ Traj</button>
+    <div id="message">Player 1's turn — select weapon and throw!</div>
   </div>
-
-  <div id="message">Player 1's turn — select weapon and throw!</div>
 </div>
 
 <div id="overlay">
@@ -841,6 +886,13 @@ function updateHUD() {
   }
 
   updateAmmoDisplay();
+
+  // Turn indicator
+  const tl = document.getElementById('turn-line');
+  if (tl && state.phase === 'input') {
+    tl.textContent = `Player ${state.current + 1}'s Turn`;
+    tl.className = state.current === 0 ? 'p1' : 'p2';
+  }
 }
 
 function showRoundOverlay(winner) {
